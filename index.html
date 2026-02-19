@@ -224,8 +224,8 @@
       const card = document.createElement('div');
       card.className = 'server-card';
       const countText = (typeof server.count === 'number') ? server.count : '—';
-      const statusEmoji = server.status === 'banned' ? '🔴Zbanowana' : '🟢Zatwierdzona';
-      const verifiedEmoji = server.verified ? '⚪Oficjalna' : '';
+      const statusEmoji = server.status === 'banned' ? '🔴Banned' : '🟢Approved';
+      const verifiedEmoji = server.verified ? '⚪Official' : '';
       const badgesHtml = `<div style="margin-bottom:8px; font-size:12px; color:#cbd0d6">${statusEmoji}${verifiedEmoji ? ' ' + verifiedEmoji : ''}</div>`;
       
       // Calculate local time based on coordinates
