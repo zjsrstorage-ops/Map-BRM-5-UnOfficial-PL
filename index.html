@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interaktywna Mapa Świata</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      display:flex;
+      height:100vh;
+      overflow:hidden;
+      background:#0f1115;
+      color:#e4e6eb;
+    }
+
+    #map {
+      flex:1;
+      height:100%;
+      background:#0f1115;
+    }
+
+    #sidebar {
+      width:340px;
+      background:#181a20;
+      padding:20px;
+      overflow-y:auto;
+      transition: all 0.3s ease;
+      position:absolute;
+      right:0;
+      top:0;
+      bottom:0;
+      z-index:1000;
+      box-shadow:-5px 0 25px rgba(0,0,0,0.5);
+    }
+
+    #sidebar.hidden {
+      right:-340px;
+    }
+
+    #toggleBtn {
+      position:absolute;
+      top:15px;
+      right:360px;
+      z-index:1100;
+      padding:8px 14px;
+      cursor:pointer;
+      background:#5865F2;
+      border:none;
+      color:white;
+      border-radius:8px;
+      transition:0.2s;
+    }
+
+    #toggleBtn:hover { opacity:0.8; }
+
+    h2 { margin-bottom: 15px; }
+
+    #searchInput {
+      width:100%;
+      padding:10px;
+      margin-bottom:15px;
+      border-radius:8px;
+      border:none;
+      background:#242731;
+      color:white;
+    }
+
+    .server-card {
+      background:#242731;
+      border-radius:14px;
+      padding:15px;
+      margin-bottom:15px;
+      text-align:center;
+      transition:0.2s;
+    }
+
+    .server-card:hover { transform: translateY(-3px); }
+
+    .server-card img {
+      width: 50px;
+      height: 50px;
+      object-fit: contain;
+      margin-bottom: 8px;
+      background:#242731;
+    }
+
+    .server-card h3 { margin-bottom: 8px; }
+
+    .btn {
+      display: inline-block;
+      padding: 6px 10px;
+      margin: 4px 2px;
+      border-radius: 6px;
+      font-size: 13px;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+    }
+
+    .discord-btn { 
+      background: #5865F2; 
+      color: white !important;
+      text-decoration: none;
+    }
+    .discord-btn:visited { color: white !important; }
+    .delete-btn { background: #d9534f; color: white; }
+
+    .leaflet-popup-content-wrapper {
+      background:#242731;
+      color:white;
+    }
+
+    .leaflet-marker-icon {
+      object-fit: contain !important;
+      background-size: contain !important;
+      background-repeat: no-repeat !important;
+      background-position: center !important;
+    }
+    
+    /* Sidebar list scroll area and custom scrollbar */
+    #serverList {
+      max-height: calc(100vh - 220px);
+      overflow-y: auto;
+      padding-right: 8px; /* space for custom scrollbar */
+    }
+
+    /* WebKit browsers */
+    #serverList::-webkit-scrollbar {
+      width: 10px;
+    }
+    #serverList::-webkit-scrollbar-track {
+      background: #181a20;
+      border-radius: 6px;
+    }
+    #serverList::-webkit-scrollbar-thumb {
+      background: #5865F2;
+      border-radius: 6px;
+    }
+    #serverList::-webkit-scrollbar-thumb:hover {
+      background: #4753d8;
+    }
+
+    /* Firefox */
+    #serverList {
+      scrollbar-width: thin;
+      scrollbar-color: #5865F2 #181a20;
+    }
+  </style>
+</head>
+<body>
+
+<button id="toggleBtn">Ukryj</button>
+
+<div id="map"></div>
+
+<div id="sidebar">
+  <h2>BRM 5 Polskie Jednostki</h2>
+  <input type="text" id="searchInput" placeholder="Szukaj serwera...">
+  <div id="countStatus" style="font-size:13px; color:#cbd0d6; margin-bottom:8px"></div>
+  <div id="serverList"></div>
+</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+
+  const map = L.map('map', { 
+    worldCopyJump: false,
+    maxBounds: [[-85, -180], [85, 180]],
+    maxBoundsViscosity: 1.0,
+    minZoom: 5
+  }).setView([52, 19], 6);
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; OpenStreetMap contributors',
+    noWrap: true
+  }).addTo(map);
+
+  const serverList = document.getElementById('serverList');
+  const sidebar = document.getElementById('sidebar');
+  const toggleBtn = document.getElementById('toggleBtn');
+  const searchInput = document.getElementById('searchInput');
+  const countStatus = document.getElementById('countStatus');
+
+  let servers = [];
+  let markers = [];
+  const CACHE_KEY = 'discordCountsCache';
+  const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+  let isFetchingCounts = false;
+
+  toggleBtn.addEventListener('click', () => {
+    sidebar.classList.toggle('hidden');
+    toggleBtn.textContent = sidebar.classList.contains('hidden') ? 'Pokaż' : 'Ukryj';
+  });
+
+  function renderSidebar(filter = "") {
+    serverList.innerHTML = "";
+    const filtered = servers
+      .filter(s => s.name.toLowerCase().includes(filter.toLowerCase()))
+      .slice()
+      .sort((a, b) => (b.count || 0) - (a.count || 0));
+
+    filtered.forEach((server, index) => {
+      const card = document.createElement('div');
+      card.className = 'server-card';
+      const countText = (typeof server.count === 'number') ? server.count : '—';
+      const statusEmoji = server.status === 'banned' ? '🔴Zbanowana' : '🟢Zatwierdzona';
+      const verifiedEmoji = server.verified ? '⚪Oficjalna' : '';
+      const badgesHtml = `<div style="margin-bottom:8px; font-size:12px; color:#cbd0d6">${statusEmoji}${verifiedEmoji ? ' ' + verifiedEmoji : ''}</div>`;
+      
+      // Calculate local time based on coordinates
+      const timezone = getTimezoneForCoords(server.position[0], server.position[1]);
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString('pl-PL', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        timeZone: timezone
+      });
+      
+      card.innerHTML = `
+        <div style="position:relative; margin-bottom:10px">
+          <img src="${server.logo}">
+          <div style="position:absolute; top:0; right:0; background:#5865F2; color:white; padding:4px 6px; border-radius:4px; font-size:11px; font-weight:bold" data-timezone="${timezone}">${timeStr}</div>
+        </div>
+        <h3>${server.name}</h3>
+        ${badgesHtml}
+        <div style="margin-bottom:8px; font-size:13px; color:#cbd0d6">Użytkowników: ${countText}</div>
+        <a class="btn discord-btn" href="${server.discord}" target="_blank">Discord</a>
+      `;
+      card.style.cursor = 'pointer';
+      card.addEventListener('click', () => {
+        map.setView(server.position, 10);
+      });
+      serverList.appendChild(card);
+    });
+  }
+
+  function createMarker(server) {
+    function getIconSize() {
+      const zoom = map.getZoom();
+      const baseSize = 30;
+      const size = Math.max(20, baseSize + (zoom - 5) * 5);
+      return [size, size];
+    }
+
+    const iconSize = getIconSize();
+    const icon = L.icon({
+      iconUrl: server.logo,
+      iconSize: iconSize,
+      iconAnchor: [iconSize[0] / 2, iconSize[1] / 2]
+    });
+    const marker = L.marker(server.position, { icon }).addTo(map);
+
+    // initial popup content (no member count yet)
+    function popupContent(count) {
+      const countHtml = (typeof count === 'number')
+        ? `<div style="margin-bottom:6px">Użytkowników na Discordzie: <strong>${count}</strong></div>`
+        : '';
+      const statusEmoji = server.status === 'banned' ? '🔴Zbanowana' : '🟢Zatwierdzona';
+      const verifiedEmoji = server.verified ? '⚪Oficjalna' : '';
+      const badgesHtml = `<div style="margin-bottom:6px; font-size:13px">${statusEmoji}${verifiedEmoji ? ' ' + verifiedEmoji : ''}</div>`;
+      return `
+        <div style="text-align:center">
+          <img src="${server.logo}" width="50"><br>
+          <strong>${server.name}</strong><br>
+          ${badgesHtml}
+          ${countHtml}
+          <a class="btn discord-btn" href="${server.discord}" target="_blank">Discord</a>
+        </div>
+      `;
+    }
+
+    marker.bindPopup(popupContent());
+
+    // when marker is clicked, fetch invite info and update popup with member count
+    marker.on('click', async () => {
+      const popup = marker.getPopup();
+      popup.setContent(popupContent('Ładowanie...'));
+      marker.openPopup();
+
+      try {
+        const count = await fetchInviteCount(server);
+        popup.setContent(popupContent(count ?? 'Brak danych'));
+        marker.openPopup();
+        // refresh sidebar order now that we may have updated counts
+        renderSidebar(searchInput.value);
+      } catch (err) {
+        popup.setContent(popupContent('Brak danych'));
+        marker.openPopup();
+      }
+    });
+
+    markers.push({ marker, server });
+  }
+
+  function renderMarkers() {
+    markers.forEach(m => map.removeLayer(m.marker));
+    markers = [];
+    servers.forEach(server => createMarker(server));
+  }
+
+  function updateMarkersSize() {
+    markers.forEach(({ marker, server }) => {
+      const zoom = map.getZoom();
+      const baseSize = 30;
+      const size = baseSize + (zoom - 5) * 5;
+      const icon = L.icon({ 
+        iconUrl: server.logo, 
+        iconSize: [size, size],
+        iconAnchor: [size / 2, size / 2]
+      });
+      marker.setIcon(icon);
+    });
+  }
+
+  // Caching helpers
+  function loadCache() {
+    try {
+      return JSON.parse(localStorage.getItem(CACHE_KEY) || '{}');
+    } catch (e) { return {}; }
+  }
+
+  function saveCache(obj) {
+    try { localStorage.setItem(CACHE_KEY, JSON.stringify(obj)); } catch (e) {}
+  }
+
+  // Fetch member count from Discord invite and store on server object, with cache
+  async function fetchInviteCount(server) {
+    try {
+      const cache = loadCache();
+      const key = encodeURIComponent(server.discord || server.name);
+      const now = Date.now();
+      if (cache[key] && (now - cache[key].ts) < CACHE_TTL) {
+        server.count = cache[key].count;
+        return server.count;
+      }
+
+      const url = new URL(server.discord.startsWith('http') ? server.discord : `https://${server.discord}`);
+      const parts = url.pathname.split('/').filter(Boolean);
+      const code = parts[parts.length - 1];
+      if (!code) { server.count = null; cache[key] = { count: null, ts: now }; saveCache(cache); return null; }
+
+      const res = await fetch(`https://discord.com/api/v9/invites/${code}?with_counts=true`);
+      if (!res.ok) { server.count = null; cache[key] = { count: null, ts: now }; saveCache(cache); return null; }
+      const data = await res.json();
+      const count = data.approximate_member_count ?? data.guild?.approximate_member_count ?? null;
+      server.count = (typeof count === 'number') ? count : null;
+      cache[key] = { count: server.count, ts: now };
+      saveCache(cache);
+      return server.count;
+    } catch (err) {
+      server.count = null;
+      return null;
+    }
+  }
+
+  async function fetchCountsForAllServers() {
+    isFetchingCounts = true;
+    if (countStatus) countStatus.textContent = 'Ładowanie liczby użytkowników...';
+    try {
+      await Promise.all(servers.map(s => fetchInviteCount(s)));
+    } finally {
+      isFetchingCounts = false;
+      if (countStatus) countStatus.textContent = '';
+    }
+  }
+
+  searchInput.addEventListener('input', (e) => {
+    renderSidebar(e.target.value);
+  });
+
+  // Map coordinates to timezone
+  function getTimezoneForCoords(lat, lon) {
+    // Poland is always in Europe/Warsaw timezone
+    if (lat >= 48.5 && lat <= 55 && lon >= 13 && lon <= 25) {
+      return 'Europe/Warsaw';
+    }
+    // Rough timezone mapping based on longitude
+    if (lon < -97) return 'America/Chicago';
+    if (lon < -82) return 'America/New_York';
+    if (lon < -30) return 'Atlantic/Azores';
+    if (lon < 0) return 'Europe/London';
+    if (lon < 30) return 'Europe/Paris';
+    if (lon < 60) return 'Europe/Moscow';
+    return 'Asia/Tokyo';
+  }
+
+  map.on('zoomend', updateMarkersSize);
+
+  // Update time on all cards every second
+  setInterval(() => {
+    const timeElements = document.querySelectorAll('[data-timezone]');
+    timeElements.forEach(el => {
+      const tz = el.getAttribute('data-timezone');
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString('pl-PL', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        timeZone: tz
+      });
+      el.textContent = timeStr;
+    });
+  }, 1000);
+
+  // 🔥 AUTOMATYCZNE WCZYTYWANIE points.json PRZY STARCI
+  document.addEventListener("DOMContentLoaded", function() {
+    fetch('./points.json')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error("Nie znaleziono pliku points.json");
+        }
+        return response.json();
+      })
+      .then(async data => {
+        if (!Array.isArray(data)) {
+          throw new Error("points.json musi zawierać tablicę obiektów");
+        }
+        servers = data;
+        renderMarkers();
+        renderSidebar();
+
+        // fetch counts in background and refresh sidebar when ready
+        try {
+          await fetchCountsForAllServers();
+          renderSidebar(searchInput.value);
+        } catch (e) {
+          console.warn('Błąd pobierania liczby użytkowników:', e);
+        }
+      })
+      .catch(error => {
+        console.warn("Błąd ładowania points.json:", error.message);
+      });
+  });
+
+</script>
+
+</body>
+</html>
