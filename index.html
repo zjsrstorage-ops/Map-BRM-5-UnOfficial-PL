@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Interaktywna Mapa Świata</title>
+  <title>Interractive map BRM 5 Fraction Unofficial</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 
   <style>
@@ -173,7 +173,7 @@
 <div id="map"></div>
 
 <div id="sidebar">
-  <h2>BRM 5 Polskie Jednostki</h2>
+  <h2>BRM 5 Polish Fractions</h2>
   <input type="text" id="searchInput" placeholder="Szukaj serwera...">
   <div id="countStatus" style="font-size:13px; color:#cbd0d6; margin-bottom:8px"></div>
   <div id="serverList"></div>
@@ -276,8 +276,8 @@
       const countHtml = (typeof count === 'number')
         ? `<div style="margin-bottom:6px">Użytkowników na Discordzie: <strong>${count}</strong></div>`
         : '';
-      const statusEmoji = server.status === 'banned' ? '🔴Zbanowana' : '🟢Zatwierdzona';
-      const verifiedEmoji = server.verified ? '⚪Oficjalna' : '';
+      const statusEmoji = server.status === 'banned' ? '🔴Banned' : '🟢Verify';
+      const verifiedEmoji = server.verified ? '⚪Official' : '';
       const badgesHtml = `<div style="margin-bottom:6px; font-size:13px">${statusEmoji}${verifiedEmoji ? ' ' + verifiedEmoji : ''}</div>`;
       return `
         <div style="text-align:center">
