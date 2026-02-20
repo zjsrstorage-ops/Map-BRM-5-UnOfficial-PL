@@ -79,5 +79,14 @@
     "status": "approved",
     "verified": true,
     "flag": ""
+  },
+  {
+    "name": "38th Swedish Foreign Mechanised Brigade",
+    "logo": "https://media.discordapp.net/attachments/1073714315674255553/1474470132708544672/logoasdasd.png?ex=6999f6d1&is=6998a551&hm=b0b61393c2566b9f6544cdb724dee0e4431c02978e58b776bbfc9dea3fd7c359&=&format=webp&quality=lossless&width=414&height=488",
+    "discord": "https://discord.gg/Rrpq2qWBWw",
+    "position": [65.7815, 21.7023],
+    "status": "approved",
+    "verified": false,
+    "flag": "EN"
   }
 ]
