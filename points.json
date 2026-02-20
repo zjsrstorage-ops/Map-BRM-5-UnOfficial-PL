@@ -97,5 +97,23 @@
     "status": "approved",
     "verified": false,
     "flag": "EN"
+  },
+  {
+    "name": "Polish NATO",
+    "logo": "images/Polish Nato.jpg",
+    "discord": "https://discord.gg/Ad9hjX4Cty",
+    "position": [52.2682, 21.1879],
+    "status": "approved",
+    "verified": false,
+    "flag": "PL"
+  },
+  {
+    "name": "GHOST DIVISION",
+    "logo": "images/GHOST DIVISION.png",
+    "discord": "https://discord.gg/Ad9hjX4Cty",
+    "position": [50.6948, 17.9838],
+    "status": "banned",
+    "verified": false,
+    "flag": "PL"
   }
 ]
