@@ -36,6 +36,7 @@
       bottom:0;
       z-index:1000;
       box-shadow:-5px 0 25px rgba(0,0,0,0.5);
+      will-change: transform;
     }
 
     #sidebar.hidden {
@@ -53,14 +54,18 @@
       border:none;
       color:white;
       border-radius:8px;
-      transition:0.2s;
+      transition: right 0.3s ease;
+    }
+
+    body.sidebar-hidden #toggleBtn {
+      right:15px;
     }
 
     #toggleBtn:hover { opacity:0.8; }
 
     h2 { margin-bottom: 15px; }
 
-    #searchInput {
+    #searchInput, #filterCountry {
       width:100%;
       padding:10px;
       margin-bottom:15px;
@@ -70,6 +75,10 @@
       color:white;
     }
 
+    #filterCountry {
+      cursor: pointer;
+    }
+
     .server-card {
       background:#242731;
       border-radius:14px;
@@ -77,6 +86,7 @@
       margin-bottom:15px;
       text-align:center;
       transition:0.2s;
+      contain: layout style paint;
     }
 
     .server-card:hover { transform: translateY(-3px); }
@@ -124,7 +134,7 @@
     
     /* Sidebar list scroll area and custom scrollbar */
     #serverList {
-      max-height: calc(100vh - 220px);
+      max-height: calc(100vh - 280px);
       overflow-y: auto;
       padding-right: 8px; /* space for custom scrollbar */
     }
@@ -168,13 +178,16 @@
 </head>
 <body>
 
-<button id="toggleBtn">Ukryj</button>
+<button id="toggleBtn">Hide</button>
 
 <div id="map"></div>
 
 <div id="sidebar">
-  <h2>BRM 5 Polish Fractions</h2>
-  <input type="text" id="searchInput" placeholder="Szukaj serwera...">
+  <h2>Unofficial BRM 5 Factions</h2>
+  <input type="text" id="searchInput" placeholder="Search server...">
+  <select id="filterCountry" style="font-size:13px">
+    <option value="" selected>All countries</option>
+  </select>
   <div id="countStatus" style="font-size:13px; color:#cbd0d6; margin-bottom:8px"></div>
   <div id="serverList"></div>
 </div>
@@ -188,18 +201,23 @@
     worldCopyJump: false,
     maxBounds: [[-85, -180], [85, 180]],
     maxBoundsViscosity: 1.0,
-    minZoom: 5
+    minZoom: 5,
+    preferCanvas: true,
+    attributionControl: false
   }).setView([52, 19], 6);
 
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
     attribution: '&copy; OpenStreetMap contributors',
-    noWrap: true
+    noWrap: true,
+    maxNativeZoom: 18,
+    maxZoom: 20
   }).addTo(map);
 
   const serverList = document.getElementById('serverList');
   const sidebar = document.getElementById('sidebar');
   const toggleBtn = document.getElementById('toggleBtn');
   const searchInput = document.getElementById('searchInput');
+  const filterCountry = document.getElementById('filterCountry');
   const countStatus = document.getElementById('countStatus');
 
   let servers = [];
@@ -207,18 +225,25 @@
   const CACHE_KEY = 'discordCountsCache';
   const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
   let isFetchingCounts = false;
+  let lastZoom = 6;
+  let searchDebounceTimer = null;
+  let filterDebounceTimer = null;
 
   toggleBtn.addEventListener('click', () => {
     sidebar.classList.toggle('hidden');
-    toggleBtn.textContent = sidebar.classList.contains('hidden') ? 'Pokaż' : 'Ukryj';
-  });
+    document.body.classList.toggle('sidebar-hidden');
+    toggleBtn.textContent = sidebar.classList.contains('hidden') ? 'Show' : 'Hide';
+  }, { passive: true });
 
-  function renderSidebar(filter = "") {
-    serverList.innerHTML = "";
+  function renderSidebar(filter = "", countryFilter = "") {
     const filtered = servers
       .filter(s => s.name.toLowerCase().includes(filter.toLowerCase()))
+      .filter(s => !countryFilter || (s.flag && s.flag.includes(countryFilter)))
       .slice()
       .sort((a, b) => (b.count || 0) - (a.count || 0));
+
+    // Use DocumentFragment for batch DOM operations (faster)
+    const fragment = document.createDocumentFragment();
 
     filtered.forEach((server, index) => {
       const card = document.createElement('div');
@@ -236,23 +261,28 @@
         minute: '2-digit',
         timeZone: timezone
       });
+      const countryFlag = server.flag || '🌍'; // Use flag from JSON or default globe
       
       card.innerHTML = `
         <div style="position:relative; margin-bottom:10px">
-          <img src="${server.logo}">
+          <img src="${server.logo}" loading="lazy">
+          <div style="position:absolute; top:0; left:0; font-size:20px; line-height:1">${countryFlag}</div>
           <div style="position:absolute; top:0; right:0; background:#5865F2; color:white; padding:4px 6px; border-radius:4px; font-size:11px; font-weight:bold" data-timezone="${timezone}">${timeStr}</div>
         </div>
         <h3>${server.name}</h3>
         ${badgesHtml}
-        <div style="margin-bottom:8px; font-size:13px; color:#cbd0d6">Użytkowników: ${countText}</div>
+        <div style="margin-bottom:8px; font-size:13px; color:#cbd0d6">Users: ${countText}</div>
         <a class="btn discord-btn" href="${server.discord}" target="_blank">Discord</a>
       `;
       card.style.cursor = 'pointer';
       card.addEventListener('click', () => {
         map.setView(server.position, 10);
       });
-      serverList.appendChild(card);
+      fragment.appendChild(card);
     });
+
+    serverList.innerHTML = "";
+    serverList.appendChild(fragment);
   }
 
   function createMarker(server) {
@@ -265,23 +295,23 @@
 
     const iconSize = getIconSize();
     const icon = L.icon({
-      iconUrl: server.logo,
+      iconUrl: server.logo + '&width=60&height=60',
       iconSize: iconSize,
       iconAnchor: [iconSize[0] / 2, iconSize[1] / 2]
     });
-    const marker = L.marker(server.position, { icon }).addTo(map);
+    const marker = L.marker(server.position, { icon, interactive: true }).addTo(map);
 
     // initial popup content (no member count yet)
     function popupContent(count) {
       const countHtml = (typeof count === 'number')
-        ? `<div style="margin-bottom:6px">Użytkowników na Discordzie: <strong>${count}</strong></div>`
+        ? `<div style="margin-bottom:6px">Users on Discord: <strong>${count}</strong></div>`
         : '';
       const statusEmoji = server.status === 'banned' ? '🔴Banned' : '🟢Verify';
       const verifiedEmoji = server.verified ? '⚪Official' : '';
       const badgesHtml = `<div style="margin-bottom:6px; font-size:13px">${statusEmoji}${verifiedEmoji ? ' ' + verifiedEmoji : ''}</div>`;
       return `
         <div style="text-align:center">
-          <img src="${server.logo}" width="50"><br>
+          <img src="${server.logo}&width=50&height=50" width="50"><br>
           <strong>${server.name}</strong><br>
           ${badgesHtml}
           ${countHtml}
@@ -320,8 +350,13 @@
   }
 
   function updateMarkersSize() {
+    const zoom = map.getZoom();
+    
+    // Only update if zoom changed
+    if (zoom === lastZoom) return;
+    lastZoom = zoom;
+
     markers.forEach(({ marker, server }) => {
-      const zoom = map.getZoom();
       const baseSize = 30;
       const size = baseSize + (zoom - 5) * 5;
       const icon = L.icon({ 
@@ -378,7 +413,16 @@
     isFetchingCounts = true;
     if (countStatus) countStatus.textContent = 'Ładowanie liczby użytkowników...';
     try {
-      await Promise.all(servers.map(s => fetchInviteCount(s)));
+      // Use Promise.allSettled to fetch in parallel without blocking
+      const results = await Promise.allSettled(
+        servers.map(s => fetchInviteCount(s))
+      );
+      // Schedule sidebar update on idle callback
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(() => renderSidebar(searchInput.value), { timeout: 2000 });
+      } else {
+        setTimeout(() => renderSidebar(searchInput.value), 0);
+      }
     } finally {
       isFetchingCounts = false;
       if (countStatus) countStatus.textContent = '';
@@ -386,28 +430,47 @@
   }
 
   searchInput.addEventListener('input', (e) => {
-    renderSidebar(e.target.value);
+    clearTimeout(searchDebounceTimer);
+    searchDebounceTimer = setTimeout(() => {
+      renderSidebar(e.target.value, filterCountry.value);
+    }, 300); // 300ms debounce
   });
 
-  // Map coordinates to timezone
+  filterCountry.addEventListener('change', (e) => {
+    clearTimeout(filterDebounceTimer);
+    filterDebounceTimer = setTimeout(() => {
+      renderSidebar(searchInput.value, e.target.value);
+    }, 100);
+  });
+
+  // Map coordinates to timezone with caching
+  const timezoneCache = new Map();
   function getTimezoneForCoords(lat, lon) {
+    const key = `${lat},${lon}`;
+    if (timezoneCache.has(key)) return timezoneCache.get(key);
+    
+    let tz;
     // Poland is always in Europe/Warsaw timezone
     if (lat >= 48.5 && lat <= 55 && lon >= 13 && lon <= 25) {
-      return 'Europe/Warsaw';
+      tz = 'Europe/Warsaw';
+    } else {
+      // Rough timezone mapping based on longitude
+      if (lon < -97) tz = 'America/Chicago';
+      else if (lon < -82) tz = 'America/New_York';
+      else if (lon < -30) tz = 'Atlantic/Azores';
+      else if (lon < 0) tz = 'Europe/London';
+      else if (lon < 30) tz = 'Europe/Paris';
+      else if (lon < 60) tz = 'Europe/Moscow';
+      else tz = 'Asia/Tokyo';
     }
-    // Rough timezone mapping based on longitude
-    if (lon < -97) return 'America/Chicago';
-    if (lon < -82) return 'America/New_York';
-    if (lon < -30) return 'Atlantic/Azores';
-    if (lon < 0) return 'Europe/London';
-    if (lon < 30) return 'Europe/Paris';
-    if (lon < 60) return 'Europe/Moscow';
-    return 'Asia/Tokyo';
+    
+    timezoneCache.set(key, tz);
+    return tz;
   }
 
   map.on('zoomend', updateMarkersSize);
 
-  // Update time on all cards every second
+  // Update time on all cards every 30 seconds (reduced from 1s) and only visible elements
   setInterval(() => {
     const timeElements = document.querySelectorAll('[data-timezone]');
     timeElements.forEach(el => {
@@ -420,7 +483,7 @@
       });
       el.textContent = timeStr;
     });
-  }, 1000);
+  }, 30000);
 
   // 🔥 AUTOMATYCZNE WCZYTYWANIE points.json PRZY STARCI
   document.addEventListener("DOMContentLoaded", function() {
@@ -436,13 +499,31 @@
           throw new Error("points.json musi zawierać tablicę obiektów");
         }
         servers = data;
+        
+        // Zbierz unikalne kraje z flagi
+        const uniqueCountries = new Set();
+        servers.forEach(server => {
+          if (server.flag) {
+            uniqueCountries.add(server.flag);
+          }
+        });
+        
+        // Posortuj kraje i dodaj do select'a
+        const sortedCountries = Array.from(uniqueCountries).sort();
+        sortedCountries.forEach(country => {
+          const option = document.createElement('option');
+          option.value = country;
+          option.textContent = country;
+          filterCountry.appendChild(option);
+        });
+        
         renderMarkers();
         renderSidebar();
 
         // fetch counts in background and refresh sidebar when ready
         try {
           await fetchCountsForAllServers();
-          renderSidebar(searchInput.value);
+          renderSidebar(searchInput.value, filterCountry.value);
         } catch (e) {
           console.warn('Błąd pobierania liczby użytkowników:', e);
         }

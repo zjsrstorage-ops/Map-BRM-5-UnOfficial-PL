@@ -5,7 +5,8 @@
     "discord": "https://discord.gg/ENDAJHRGRY",
     "position": [54.5324, 17.7662],
     "status": "approved",
-    "verified": false
+    "verified": false,
+    "flag": "PL"
   },
   {
     "name": "JW 1182 GROT",
@@ -13,7 +14,8 @@
     "discord": "https://discord.gg/nNjnw56cYV",
     "position": [50.0919, 21.4116],
     "status": "banned",
-    "verified": false
+    "verified": false,
+    "flag": "PL"
   },
   {
     "name": "JW 2305 GROM",
@@ -21,7 +23,8 @@
     "discord": "https://discord.gg/m9TueyhAn3",
     "position": [51.4, 20.3],
     "status": "banned",
-    "verified": false
+    "verified": false,
+    "flag": "PL"
   },
   {
     "name": "Legion 404",
@@ -29,7 +32,8 @@
     "discord": "https://discord.gg/d5xKuBKG4P",
     "position": [51.1438, 17.05274213968453],
     "status": "banned",
-    "verified": false
+    "verified": false,
+    "flag": "PL"
   },
   {
     "name": "Jednostka Wojskowa Komandosów",
@@ -37,7 +41,8 @@
     "discord": "https://discord.gg/XPSkumEyp7",
     "position": [50.6760, 18.6840],
     "status": "banned",
-    "verified": false
+    "verified": false,
+    "flag": "PL"
   },
   {
     "name": "1 Armia Mozowsza",
@@ -45,7 +50,8 @@
     "discord": "https://discord.gg/GhFEaUKSS",
     "position": [52.2567, 21.2317],
     "status": "banned",
-    "verified": false
+    "verified": false,
+    "flag": "PL"
   },
   {
     "name": "Placówka 104",
@@ -53,7 +59,8 @@
     "discord": "https://discord.gg/hJnHfMyJWR",
     "position": [49.4, 22.3],
     "status": "banned",
-    "verified": false
+    "verified": false,
+    "flag": "PL"
   },
   {
     "name": "JW AGAT 3940",
@@ -61,7 +68,8 @@
     "discord": "https://discord.gg/RyNCD9UtYq",
     "position": [51.4, 21.3],
     "status": "banned",
-    "verified": false
+    "verified": false,
+    "flag": "PL"
   },
   {
     "name": "Platinium Five",
@@ -69,6 +77,7 @@
     "discord": "https://discord.com/invite/pl5",
     "position": [51.88, -176.64],
     "status": "approved",
-    "verified": true
+    "verified": true,
+    "flag": ""
   }
 ]
