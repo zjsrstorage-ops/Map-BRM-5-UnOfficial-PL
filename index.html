@@ -229,6 +229,17 @@
   let searchDebounceTimer = null;
   let filterDebounceTimer = null;
 
+  // Helper function: safely append query params only to Discord media URLs
+  function getImageUrl(logoPath, params = '') {
+    if (!logoPath) return '';
+    if (logoPath.startsWith('http')) {
+      // Discord/external URL - safe to add params
+      return logoPath + params;
+    }
+    // Local file - return as-is, no params
+    return logoPath;
+  }
+
   toggleBtn.addEventListener('click', () => {
     sidebar.classList.toggle('hidden');
     document.body.classList.toggle('sidebar-hidden');
@@ -265,7 +276,7 @@
       
       card.innerHTML = `
         <div style="position:relative; margin-bottom:10px">
-          <img src="${server.logo}" loading="lazy">
+          <img src="${getImageUrl(server.logo)}" loading="lazy">
           <div style="position:absolute; top:0; left:0; font-size:20px; line-height:1">${countryFlag}</div>
           <div style="position:absolute; top:0; right:0; background:#5865F2; color:white; padding:4px 6px; border-radius:4px; font-size:11px; font-weight:bold" data-timezone="${timezone}">${timeStr}</div>
         </div>
@@ -295,7 +306,7 @@
 
     const iconSize = getIconSize();
     const icon = L.icon({
-      iconUrl: server.logo + '&width=60&height=60',
+      iconUrl: getImageUrl(server.logo),
       iconSize: iconSize,
       iconAnchor: [iconSize[0] / 2, iconSize[1] / 2]
     });
@@ -311,7 +322,7 @@
       const badgesHtml = `<div style="margin-bottom:6px; font-size:13px">${statusEmoji}${verifiedEmoji ? ' ' + verifiedEmoji : ''}</div>`;
       return `
         <div style="text-align:center">
-          <img src="${server.logo}&width=50&height=50" width="50"><br>
+          <img src="${getImageUrl(server.logo)}" width="50"><br>
           <strong>${server.name}</strong><br>
           ${badgesHtml}
           ${countHtml}
@@ -360,7 +371,7 @@
       const baseSize = 30;
       const size = baseSize + (zoom - 5) * 5;
       const icon = L.icon({ 
-        iconUrl: server.logo, 
+        iconUrl: getImageUrl(server.logo), 
         iconSize: [size, size],
         iconAnchor: [size / 2, size / 2]
       });

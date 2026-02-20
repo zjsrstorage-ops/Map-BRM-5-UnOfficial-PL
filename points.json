@@ -1,7 +1,7 @@
 [
   {
     "name": "Zmechanizowana Jednostka Szybkiego Reagowania",
-    "logo": "https://media.discordapp.net/attachments/1073714315674255553/1474097559986372770/logopoprawka_zjsrasdsasad.png?ex=69989bd5&is=69974a55&hm=58720e815ca3cbb6cc8c45a8c56e62e3888c4bffbdddfb5ec40a8287c2d9163d&=&format=webp&quality=lossless&width=337&height=526",
+    "logo": "images/ZJSR.png",
     "discord": "https://discord.gg/ENDAJHRGRY",
     "position": [54.5324, 17.7662],
     "status": "approved",
@@ -10,7 +10,7 @@
   },
   {
     "name": "JW 1182 GROT",
-    "logo": "https://media.discordapp.net/attachments/1073714315674255553/1474084616712360017/pl.png?ex=69988fc7&is=69973e47&hm=d38566e1df9b833cbfa5f7daf4bcfecddbc940e5a9854f89a9c133db80a97b83&=&format=webp&quality=lossless&width=230&height=230",
+    "logo": "images/jw-1182-grot.png",
     "discord": "https://discord.gg/nNjnw56cYV",
     "position": [50.0919, 21.4116],
     "status": "banned",
@@ -19,7 +19,7 @@
   },
   {
     "name": "JW 2305 GROM",
-    "logo": "https://media.discordapp.net/attachments/1073714315674255553/1474084616712360017/pl.png?ex=69988fc7&is=69973e47&hm=d38566e1df9b833cbfa5f7daf4bcfecddbc940e5a9854f89a9c133db80a97b83&=&format=webp&quality=lossless&width=230&height=230",
+    "logo": "images/pl.png",
     "discord": "https://discord.gg/m9TueyhAn3",
     "position": [51.4, 20.3],
     "status": "banned",
@@ -28,7 +28,7 @@
   },
   {
     "name": "Legion 404",
-    "logo": "https://media.discordapp.net/attachments/1073714315674255553/1474426922611249162/na_strone_megisa_legion.png?ex=6999ce93&is=69987d13&hm=b253b3965976e3e69fada0f96d1b3038eaec4fba6ae1aee75cb4ba228e1fd606&=&format=webp&quality=lossless&width=287&height=313",
+    "logo": "images/Legion_404.png",
     "discord": "https://discord.gg/d5xKuBKG4P",
     "position": [51.1438, 17.05274213968453],
     "status": "banned",
@@ -37,7 +37,7 @@
   },
   {
     "name": "Jednostka Wojskowa Komandosów",
-    "logo": "https://media.discordapp.net/attachments/1073714315674255553/1474084616712360017/pl.png?ex=69988fc7&is=69973e47&hm=d38566e1df9b833cbfa5f7daf4bcfecddbc940e5a9854f89a9c133db80a97b83&=&format=webp&quality=lossless&width=230&height=230",
+    "logo": "images/pl.png",
     "discord": "https://discord.gg/XPSkumEyp7",
     "position": [50.6760, 18.6840],
     "status": "banned",
@@ -46,7 +46,7 @@
   },
   {
     "name": "1 Armia Mozowsza",
-    "logo": "https://media.discordapp.net/attachments/1073714315674255553/1474145467679113327/Logo_1_Armi_Mazowieckiej-1.png?ex=6998c873&is=699776f3&hm=fb2c6e48460b87bd70068f2f692eec48588cd00342ff059c6749928584ef6b23&=&format=webp&quality=lossless&width=1037&height=1231",
+    "logo": "images/1_Armi_Mazowieckiej.png",
     "discord": "https://discord.gg/GhFEaUKSS",
     "position": [52.2567, 21.2317],
     "status": "banned",
@@ -55,7 +55,7 @@
   },
   {
     "name": "Placówka 104",
-    "logo": "https://media.discordapp.net/attachments/1073714315674255553/1474084616712360017/pl.png?ex=69988fc7&is=69973e47&hm=d38566e1df9b833cbfa5f7daf4bcfecddbc940e5a9854f89a9c133db80a97b83&=&format=webp&quality=lossless&width=230&height=230",
+    "logo": "images/pl.png",
     "discord": "https://discord.gg/hJnHfMyJWR",
     "position": [49.4, 22.3],
     "status": "banned",
@@ -64,7 +64,7 @@
   },
   {
     "name": "JW AGAT 3940",
-    "logo": "https://media.discordapp.net/attachments/1073714315674255553/1474439162189975763/freepik_br_9d8e6f9e-4ec7-4546-8c68-9727d8882dcd.png?ex=6999d9fa&is=6998887a&hm=de868f86c9104540eed9bf467fb763f8dbcef9512bc2bc25d7605b2448b22231&=&format=webp&quality=lossless&width=202&height=202",
+    "logo": "images/JW_AGAT_3940.png",
     "discord": "https://discord.gg/RyNCD9UtYq",
     "position": [50.3010, 18.6388],
     "status": "banned",
@@ -73,7 +73,7 @@
   },
   {
     "name": "Platinium Five",
-    "logo": "https://media.discordapp.net/attachments/1073714315674255553/1474118751497748542/RBRM5_-_Logo_of_PLATINUM_FIVE.webp?ex=6998af92&is=69975e12&hm=5713fd572ad9788d26e6ee2750dbf67fea9f3d801bc13806b664ebf255af9954&=&format=webp&width=135&height=135",
+    "logo": "images/RBRM5_-_Logo_of_PLATINUM_FIVE.webp",
     "discord": "https://discord.com/invite/pl5",
     "position": [51.88, -176.64],
     "status": "approved",
@@ -82,9 +82,18 @@
   },
   {
     "name": "38th Swedish Foreign Mechanised Brigade",
-    "logo": "https://media.discordapp.net/attachments/1073714315674255553/1474470132708544672/logoasdasd.png?ex=6999f6d1&is=6998a551&hm=b0b61393c2566b9f6544cdb724dee0e4431c02978e58b776bbfc9dea3fd7c359&=&format=webp&quality=lossless&width=414&height=488",
+    "logo": "images/38th Swedish Foreign Mechanised Brigade.png",
     "discord": "https://discord.gg/Rrpq2qWBWw",
     "position": [65.7815, 21.7023],
+    "status": "approved",
+    "verified": false,
+    "flag": "EN"
+  },
+  {
+    "name": "Necrotic Operations Group",
+    "logo": "images/Necrotic Operations Group.png",
+    "discord": "https://discord.gg/Rrpq2qWBWw",
+    "position": [32.3568, -84.9710],
     "status": "approved",
     "verified": false,
     "flag": "EN"
