@@ -124,5 +124,14 @@
     "status": "approved",
     "verified": false,
     "flag": "EN"
+  },
+  {
+    "name": "22 Special Air Service Regiment",
+    "logo": "images/22 Special Air Service Regiment.png",
+    "discord": "https://discord.gg/5suX9DMYD5",
+    "position": [50.02610, 14.17522],
+    "status": "approved",
+    "verified": false,
+    "flag": "CZE/SVK"
   }
 ]
