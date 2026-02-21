@@ -101,7 +101,7 @@
   {
     "name": "Polish NATO",
     "logo": "images/Polish Nato.jpg",
-    "discord": "https://discord.gg/Ad9hjX4Cty",
+    "discord": "https://discord.gg/Ee64b82JU8 ",
     "position": [52.2682, 21.1879],
     "status": "approved",
     "verified": false,
@@ -115,5 +115,14 @@
     "status": "banned",
     "verified": false,
     "flag": "PL"
+  },
+  {
+    "name": "The Weeping Willow",
+    "logo": "images/The Weeping Willows.png",
+    "discord": "https://discord.gg/5suX9DMYD5",
+    "position": [47.0820, 15.5154],
+    "status": "approved",
+    "verified": false,
+    "flag": "EN"
   }
 ]
