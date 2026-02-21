@@ -201,7 +201,7 @@
     worldCopyJump: false,
     maxBounds: [[-85, -180], [85, 180]],
     maxBoundsViscosity: 1.0,
-    minZoom: 5,
+    minZoom: 1,
     preferCanvas: true,
     attributionControl: false
   }).setView([52, 19], 6);
@@ -225,7 +225,7 @@
   const CACHE_KEY = 'discordCountsCache';
   const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
   let isFetchingCounts = false;
-  let lastZoom = 6;
+  let lastZoom = 19;
   let searchDebounceTimer = null;
   let filterDebounceTimer = null;
 
