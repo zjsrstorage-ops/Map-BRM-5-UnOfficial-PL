@@ -151,5 +151,14 @@
     "status": "approved",
     "verified": false,
     "flag": "PL"
+  },
+  {
+    "name": "Oddział Specjalny Żandarmerii Wojskowej w Warszawie",
+    "logo": "images/ODZW.png",
+    "discord": "https://discord.gg/R8gW32BGWc",
+    "position": [52.2493, 20.9646],
+    "status": "approved",
+    "verified": false,
+    "flag": "PL"
   }
 ]
