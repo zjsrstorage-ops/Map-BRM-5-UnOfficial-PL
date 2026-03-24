@@ -142,5 +142,14 @@
     "status": "approved",
     "verified": false,
     "flag": "CZE"
+  },
+  {
+    "name": "ZOSW Zespół Operacji Specjalnych Wicher",
+    "logo": "images/ZOSW.png",
+    "discord": "https://discord.gg/rvp9GgYF",
+    "position": [53.7684, 20.4601],
+    "status": "approved",
+    "verified": false,
+    "flag": "PL"
   }
 ]
